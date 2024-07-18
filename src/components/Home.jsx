@@ -69,7 +69,7 @@ const Home = () => {
             <div className="flex flex-wrap justify-center w-full px-10 py-5 mt-2 gap-x-2 gap-y-1">
                 {Photos?.map((item)=>{
                         return (
-                            <div className="min-w-[18vw] min-h-[30vh] max-h-[50vh] overflow-hidden max-w-[26vw] mr-3 mb-2 hover:scale-105 border border-[#323233] hover:border-[#EE964B]" key={item.id}>
+                            <div className="min-w-[10vw] min-h-[20vh] max-h-[40vh] max-w-[20vw] overflow-hidden mr-3 mb-2 hover:scale-105 border border-[#323233] hover:border-[#EE964B]" key={item.id}>
                                 <img className="object-cover w-full h-full" src= {item.urls.small} alt={item.alt_description} />
                             </div>
                         )
