@@ -1,52 +1,88 @@
-import axios from "axios"
-import { useEffect, useState } from "react"
-
+import axios from "../utils/Axios";
+import { useEffect, useRef, useState } from "react";
 
 const Home = () => {
-    const [query, setQuery] = useState("")
-    const [Data , setData] = useState([])
-    const GetPhotos = () => {
-        const photos = axios(`https://api.unsplash.com/search/`)
-        // const photos = axios(`https://www.pexels.com/search/${query}`,{headers: {Authorization: process.env.API_KEY}})
-        photos.then((res) => {
-            setData(res);
-        })
+
+    const [Photos, setPhotos] = useState([])
+    const [pg, setpg] = useState(1)
+    const [pages, setpages] = useState(0)
+    const [errorMsg, seterrorMsg] = useState('')
+    
+    const image_Per_Page = 28;
+    
+    const searchInput = useRef(null)
+    
+    const searchHandler = (e) => {
+        e.preventDefault()
+        setpg(1)
+        fetchPhotos()
     }
 
-
+    const settingsearch = (value) =>{
+        searchInput.current.value = value
+        setpg(1)
+        fetchPhotos()
+    }
+    
     useEffect(()=>{
-        GetPhotos();
-    });
-
-    const OnEnterHandler = (e) => {
-        if(e.keyCode === 13){
-            GetPhotos();
+        fetchPhotos()
+    },[pg])
+    
+    const fetchPhotos = async () => {
+        try {
+            const query = searchInput.current.value || 'random'
+            const {data} = await axios.get(`?query=${query}&page=${pg}&per_page=${image_Per_Page}&client_id=${import.meta.env.VITE_API_KEY}`)
+            seterrorMsg('')
+            setPhotos(data.results)
+            setpages(data.total_pages)
+        } catch (error) {
+            seterrorMsg('Having problem searching for this')
+            console.log(error);
         }
     }
-
+    
+    
+    
 
     return (
-        <div className="px-5 py-7 bg-zinc-700 w-full min-h-[89.1vh]">
-            <div className="flex gap-3 w-full px-12">
-                <input type="text"
+        <div className="px-5 py-7 bg-[#323233] w-full min-h-[89.1vh]">
+    
+            <form action="" className="flex w-full gap-3 px-12">                    
+                <input type="search"
                     placeholder="Search for free photos"
-                    onKeyDown={OnEnterHandler}
-                    onChange={(e)=>{setQuery(e.target.value)}}
-                    value={query}
-                    className="border rounded px-5 py-2 w-[80vw]"
+                    onSubmit={searchHandler}
+                    ref={searchInput}
+                    className="border-2 rounded px-5 py-2 w-[80vw] outline-none hover:border-[#28A013]"
                     />
-                <button onClick={OnEnterHandler} className="px-5 py-2 bg-orange-500 font-semibold">Get Photos</button>
+                <button onClick={searchHandler} className="px-5 py-2 font-semibold text-[1.2vw] bg-[#28A013] text-[#323233] rounded hover:scale-105">Get Photos</button>
+            </form>
+            
+            {errorMsg && <div className="my-2 text-center text-red-500">{errorMsg}</div>}
+            <div className="flex items-center justify-center w-full gap-6 mt-5">
+                <h1 onClick={()=>{settingsearch('nature')}} className="px-5 py-2 rounded-lg font-semibold bg-[#28A013] text-[1.3vw] capitalize hover:rounded-none">nature</h1>
+                <h1 onClick={()=>{settingsearch('birds')}} className="px-5 py-2 rounded-lg font-semibold bg-[#28A013] text-[1.3vw] capitalize hover:rounded-none">birds</h1>
+                <h1 onClick={()=>{settingsearch('dogs')}} className="px-5 py-2 rounded-lg font-semibold bg-[#28A013] text-[1.3vw] capitalize hover:rounded-none">dogs</h1>
+                <h1 onClick={()=>{settingsearch('cats')}} className="px-5 py-2 rounded-lg font-semibold bg-[#28A013] text-[1.3vw] capitalize hover:rounded-none">cats</h1>
+                <h1 onClick={()=>{settingsearch('shoes')}} className="px-5 py-2 rounded-lg font-semibold bg-[#28A013] text-[1.3vw] capitalize hover:rounded-none">shoes</h1>
             </div>
-            <div className="w-full">
-                {Data?.map((item,index)=>{
-                    return (
-                        <div className="" key={index}>
-                            <img className="object-cover" src= {item.src.medium} alt={item.id} />
-                        </div>
-                    )
-                })}
+            
+            <div className="flex flex-wrap justify-center w-full px-10 py-5 mt-2 gap-x-2 gap-y-1">
+                {Photos?.map((item)=>{
+                        return (
+                            <div className="min-w-[18vw] min-h-[30vh] max-h-[50vh] overflow-hidden max-w-[26vw] mr-3 mb-2 hover:scale-105 border border-[#323233] hover:border-[#28A013]" key={item.id}>
+                                <img className="object-cover w-full h-full" src= {item.urls.small} alt={item.alt_description} />
+                            </div>
+                        )
+                    })}
             </div>
+
+            <div className="flex items-center justify-center w-full gap-5">
+                {pg > 1 && <button onClick={()=>{setpg(pg-1)}} className="px-5 py-2 font-semibold text-[1.2vw] bg-[#28A013] text-[#323233] rounded hover:scale-105">Previous</button>}
+                {pg < pages && <button onClick={()=>{setpg(pg+1)}} onMouseLeave={scroll()} className="px-5 py-2 font-semibold text-[1.2vw] bg-[#28A013] text-[#323233] rounded hover:scale-105">Next</button>}
+            </div>
+
         </div>
+            
     )
 }
 
